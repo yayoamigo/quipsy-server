@@ -1,0 +1,29 @@
+# Ignore Django migration files
+*.pyc
+*.pyo
+__pycache__/
+*.sqlite3
+
+# Ignore development and production settings files
+settings/local.py
+settings/production.py
+
+# Ignore static files
+staticfiles/
+media/
+
+# Ignore environment-specific files
+.env
+.env.*
+
+# Ignore IDE files
+.vscode/
+.idea/
+
+# Ignore logs
+logs/
+
+# Ignore virtual environment
+venv/
+
+
