@@ -1,46 +1,35 @@
-from django.shortcuts import render
-from rest_framework.views import APIView
-from rest_framework.response import Response
-from rest_framework import status
+from rest_framework import mixins, generics
+from rest_framework import authentication, permissions
+
 
 from .models import Product
 from .serializers import ProductSerializer
+from .permissions import IsAdminOrReadOnly
 
 
-class ProductList(APIView):
-    def get(self,request):
-        products = Product.objects.all()
-        serializer = ProductSerializer(products, many=True)
-        return Response(serializer.data)
-    
+class ProductList(generics.ListCreateAPIView):
+    queryset = Product.objects.all()
+    serializer_class = ProductSerializer
+    authentication_classes = [authentication.TokenAuthentication]
+    permission_classes = [IsAdminOrReadOnly]
+
+    def get(self, request, *args, **kwargs):
+        return self.list(request, *args, **kwargs) 
+
     def post(self, request):
-        serialize = ProductSerializer(data=request.data)
-        if serialize.is_valid():
-            serialize.save()
-            return Response(serialize.data, status=201)
-        return Response(serialize.errors, status=400)
-    
-class ProductDetail(APIView):
-    def get(self,request,pk):
-        try:
-            product = Product.objects.get(pk=pk)
+        return self.create(request)
 
-        except Product.DoesNotExist:
-            return Response(status=status.HTTP_404_NOT_FOUND)
-    
-        serializer = ProductSerializer(product)
-        return Response(serializer.data)
-        
+
+class ProductDetail(mixins.RetrieveModelMixin, mixins.UpdateModelMixin, mixins.DestroyModelMixin, generics.GenericAPIView):
+    queryset = Product.objects.all()
+    serializer_class = ProductSerializer
+
+    def get(self, request, pk):
+        return self.retrieve(request, pk=pk)
+
     def put(self, request, pk):
-        try:
-            product = Product.objects.get(pk=pk)
-        
-        except Product.DoesNotExist:
-            return Response(status=status.HTTP_404_NOT_FOUND)
-        
-        serializer = ProductSerializer(product, data=request.data)
-        if serializer.is_valid():
-            serializer.save()
-            return Response(serializer.data)
-        return Response(serializer.errors, status=400)
+        return self.update(request, pk=pk)
+    
+    def delete(self, request, pk):
+        return self.destroy(request, pk=pk)
 
